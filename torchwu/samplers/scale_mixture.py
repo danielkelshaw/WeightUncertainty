@@ -73,6 +73,6 @@ class ScaleMixture(nn.Module):
         likelihood_n2 = torch.exp(self.normal2.log_prob(w))
 
         p_scalemixture = self.pi * likelihood_n1 + (1 - self.pi) * likelihood_n2
-        log_prob = ft.reduce(lambda x, y: x * y, torch.log(p_scalemixture))
+        log_prob = torch.log(p_scalemixture).sum()
 
         return log_prob
