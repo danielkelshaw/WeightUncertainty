@@ -65,11 +65,7 @@ class GaussianVariational(nn.Module):
         Calculates the Gaussian log likelihood of the sampled weight
         given the the current mean, mu, and standard deviation, sigma:
 
-            LL = -log((2pi)^0.5) - sigma - 0.5(w - mu)^2 / sigma^2
-
-        Note:
-            sigma is used as opposed to log(sigma) as value previously
-            calculated has already been passed through a log function.
+            LL = -log((2pi * sigma^2)^0.5) - 0.5(w - mu)^2 / sigma^2
 
         Returns
         -------
@@ -82,6 +78,6 @@ class GaussianVariational(nn.Module):
 
         log_const = np.log(np.sqrt(2 * np.pi))
         log_exp = ((self.w - self.mu) ** 2) / (2 * self.sigma ** 2)
-        log_posterior = -log_const - self.sigma - log_exp
+        log_posterior = -log_const - torch.log(self.sigma) - log_exp
 
         return log_posterior.mean()
