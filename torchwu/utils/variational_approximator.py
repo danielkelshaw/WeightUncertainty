@@ -21,9 +21,6 @@ def variational_approximator(model: nn.Module) -> nn.Module:
         Model with additional variational approximation functionality.
     """
 
-    if not isinstance(model, nn.Module):
-        raise ValueError('model must be an instance of nn.Module.')
-
     def kl_divergence(self) -> Tensor:
 
         """Calculates the KL Divergence for each BayesianModule.
