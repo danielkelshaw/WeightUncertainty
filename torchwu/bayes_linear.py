@@ -20,8 +20,8 @@ class BayesLinear(BayesianModule):
 
         super().__init__()
 
-        mu = torch.empty(in_features, out_features).uniform_(-0.2, 0.2)
-        rho = torch.empty(in_features, out_features).uniform_(-5.0, -4.0)
+        mu = torch.empty(out_features, in_features).uniform_(-0.2, 0.2)
+        rho = torch.empty(out_features, in_features).uniform_(-5.0, -4.0)
 
         self.prior = ScaleMixture(prior_pi, prior_sigma1, prior_sigma2)
         self.posterior = GaussianVariational(mu, rho)
