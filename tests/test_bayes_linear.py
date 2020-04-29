@@ -13,7 +13,7 @@ class TestBayesLinear:
 
     def test_forward(self, bayes_linear):
 
-        input = torch.arange(1, 6, dtype=torch.float32)
+        input = torch.ones(5)
         ret_tensor = bayes_linear.forward(input)
 
         assert len(ret_tensor) == 3
