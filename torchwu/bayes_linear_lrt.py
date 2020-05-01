@@ -40,11 +40,11 @@ class BayesLinearLRT(BayesianModule):
         self.out_feature = out_features
         self.std_prior = std_prior
 
-        self.mu = nn.Pararmeter(
+        self.mu = nn.Parameter(
             torch.empty(out_features, in_features).uniform_(-0.2, 0.2)
         )
 
-        self.rho = nn.Pararmeter(
+        self.rho = nn.Parameter(
             torch.empty(out_features, in_features).uniform_(-5.0, -4.0)
         )
 
