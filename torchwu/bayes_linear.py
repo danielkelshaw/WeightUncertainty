@@ -48,8 +48,7 @@ class BayesLinear(BayesianModule):
         self.prior = ScaleMixture(prior_pi, prior_sigma1, prior_sigma2)
         self.posterior = GaussianVariational(mu, rho)
 
-        self.log_prior = 0.0
-        self.log_posterior = 0.0
+        self.kl_divergence = 0.0
 
     def forward(self, x: Tensor) -> Tensor:
 
@@ -68,7 +67,31 @@ class BayesLinear(BayesianModule):
 
         w = self.posterior.sample()
 
-        self.log_prior = self.prior.log_prior(w)
-        self.log_posterior = self.posterior.log_posterior()
+        log_prior = self.prior.log_prior(w)
+        log_posterior = self.posterior.log_posterior()
+
+        self.kl_divergence = self.kld(log_prior, log_posterior)
 
         return F.linear(x, w)
+
+    def kld(self, log_prior: Tensor, log_posterior: Tensor) -> Tensor:
+
+        """Calculates the KL Divergence.
+
+        Uses the weight sampled from the posterior distribution to
+        calculate the KL Divergence between the prior and posterior.
+
+        Parameters
+        ----------
+        log_prior : Tensor
+            Log likelihood drawn from the prior.
+        log_posterior : Tensor
+            Log likelihood drawn from the approximate posterior.
+
+        Returns
+        -------
+        Tensor
+            Calculated KL Divergence.
+        """
+
+        return log_posterior - log_prior

@@ -35,11 +35,11 @@ def variational_approximator(model: nn.Module) -> nn.Module:
         kl : Tensor
             Total KL Divergence.
         """
-        
+
         kl = 0
         for module in self.modules():
             if isinstance(module, BayesianModule):
-                kl += module.log_posterior - module.log_prior
+                kl += module.kl_divergence
 
         return kl
 

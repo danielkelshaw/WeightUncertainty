@@ -7,3 +7,6 @@ class BayesianModule(nn.Module):
 
     def __init__(self):
         super().__init__()
+
+    def kld(self, *args):
+        raise NotImplementedError('BayesianModule::kld()')
