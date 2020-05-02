@@ -1,8 +1,9 @@
 import csv
 
 import numpy as np
-import torch
 import torch.nn as nn
+import torch.nn.functional as F
+import torch.utils.data
 from torchvision import datasets
 from torchvision import transforms
 
@@ -30,12 +31,12 @@ testset = datasets.MNIST('./data',
                          download=True,
                          transform=transform)
 
-trainloader = torch.data.utils.DataLoader(trainset,
-                                          batch_size=32,
+trainloader = torch.utils.data.DataLoader(trainset,
+                                          batch_size=128,
                                           **kwargs)
 
-testloader = torch.data.utils.DataLoader(testset,
-                                         batch_size=32,
+testloader = torch.utils.data.DataLoader(testset,
+                                         batch_size=128,
                                          **kwargs)
 
 
@@ -43,13 +44,18 @@ testloader = torch.data.utils.DataLoader(testset,
 class BayesianNetwork(nn.Module):
     def __init__(self, input_dim, output_dim):
         super().__init__()
-        self.blinear1 = BayesLinear(input_dim, 512)
-        self.blinear2 = BayesLinear(512, output_dim)
+        self.bl1 = BayesLinear(input_dim, 1200)
+        self.bl2 = BayesLinear(1200, 1200)
+        self.bl3 = BayesLinear(1200, output_dim)
 
     def forward(self, x):
-        x_ = x.view(-1, 28 * 28)
-        x_ = self.blinear1(x_)
-        return self.blinear2(x_)
+        x = x.view(-1, 28 * 28)
+
+        x = F.relu(self.bl1(x))
+        x = F.relu(self.bl2(x))
+        x = F.softmax(self.bl3(x))
+
+        return x
 
 
 model = BayesianNetwork(28 * 28, 10).to(device)
@@ -62,7 +68,7 @@ with open('results.csv', 'w+', newline="") as f_out:
     writer.writerow(['epoch', 'train_loss', 'test_loss', 'accuracy'])
 
 min_test_loss = np.Inf
-for epoch in range(20):
+for epoch in range(500):
 
     train_loss = 0.0
     test_loss = 0.0
@@ -75,14 +81,14 @@ for epoch in range(20):
 
         output = model(data)
 
-        pi_weight = minibatch_weight(batch_idx=batch_idx, num_batches=32)
+        pi_weight = minibatch_weight(batch_idx=batch_idx, num_batches=128)
 
         loss = model.elbo(
             inputs=data,
-            labels=labels,
+            targets=labels,
             criterion=criterion,
-            sample_nbr=5,
-            complexity_cost_weight=pi_weight
+            n_samples=5,
+            w_complexity=pi_weight
         )
 
         train_loss += loss.item() * data.size(0)
@@ -101,23 +107,26 @@ for epoch in range(20):
 
     model.eval()
     with torch.no_grad():
-        for data, labels in testloader:
+        for batch_idx, (data, labels) in enumerate(testloader):
             data, labels = data.to(device), labels.to(device)
 
             outputs = model(data)
 
+            pi_weight = minibatch_weight(batch_idx=batch_idx, num_batches=128)
+
             loss = model.elbo(
                 inputs=data,
-                labels=labels,
+                targets=labels,
                 criterion=criterion,
-                sample_nbr=5
+                n_samples=5,
+                w_complexity=pi_weight
             )
 
             test_loss += loss.item() * data.size(0)
             _, predicted = torch.max(outputs.data, 1)
 
             total += labels.size(0)
-            correct += torch.eq(predicted, labels.to).sum().item()
+            correct += torch.eq(predicted, labels).sum().item()
 
     accuracy = 100 * correct / total
     train_loss /= len(trainloader.dataset)

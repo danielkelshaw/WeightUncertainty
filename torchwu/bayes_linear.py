@@ -22,7 +22,7 @@ class BayesLinear(BayesianModule):
                  out_features: int,
                  prior_pi: Optional[float] = 0.5,
                  prior_sigma1: Optional[float] = 1.0,
-                 prior_sigma2: Optional[float] = 0.005) -> None:
+                 prior_sigma2: Optional[float] = 0.0025) -> None:
 
         """Bayesian Linear Layer.
 
