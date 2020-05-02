@@ -40,13 +40,17 @@ class BayesLinearLRT(BayesianModule):
         self.out_feature = out_features
         self.std_prior = std_prior
 
-        self.mu = nn.Parameter(
-            torch.empty(out_features, in_features).uniform_(-0.2, 0.2)
-        )
+        w_mu = torch.empty(out_features, in_features).uniform_(-0.2, 0.2)
+        self.w_mu = nn.Parameter(w_mu)
 
-        self.rho = nn.Parameter(
-            torch.empty(out_features, in_features).uniform_(-5.0, -4.0)
-        )
+        w_rho = torch.empty(out_features, in_features).uniform_(-5.0, -4.0)
+        self.w_rho = nn.Parameter(w_rho)
+
+        bias_mu = torch.empty(out_features).uniform_(-0.2, 0.2)
+        self.bias_mu = nn.Parameter(bias_mu)
+
+        bias_rho = torch.empty(out_features).uniform_(-5.0, -4.0)
+        self.bias_rho = nn.Parameter(bias_rho)
 
         self.epsilon_normal = torch.distributions.Normal(0, 1)
 
@@ -78,23 +82,37 @@ class BayesLinearLRT(BayesianModule):
             Output from the Bayesian Linear Layer.
         """
 
-        std = torch.log(1 + torch.exp(self.rho))
+        w_std = torch.log(1 + torch.exp(self.w_rho))
+        b_std = torch.log(1 + torch.exp(self.bias_rho))
 
         act_mu = F.linear(x, self.mu)
-        act_std = torch.sqrt(F.linear(x.pow(2), std.pow(2)))
+        act_std = torch.sqrt(F.linear(x.pow(2), w_std.pow(2)))
 
-        eps = self.epsilon_normal.sample(act_mu.size())
+        w_eps = self.epsilon_normal.sample(act_mu.size())
+        bias_eps = self.epsilon_normal.sample(b_std.size())
 
-        w = act_mu + act_std * eps
+        w_out = act_mu + act_std * w_eps
+        b_out = self.bias_mu + b_std * bias_eps
 
-        self.kl_divergence = self.kld(
+        output = w_out + b_out.unsqueeze(0).expand(x.shape[0], -1)
+
+        w_kl = self.kld(
             mu_prior=0.0,
             std_prior=self.std_prior,
             mu_posterior=self.mu,
-            std_posterior=std
+            std_posterior=w_std
         )
 
-        return w
+        bias_kl = self.kld(
+            mu_prior=0.0,
+            std_prior=0.1,
+            mu_posterior=self.bias_mu,
+            std_posterior=b_std
+        )
+
+        self.kl_divergence = w_kl + bias_kl
+
+        return output
 
     def kld(self,
             mu_prior: float,
