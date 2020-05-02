@@ -85,7 +85,7 @@ class BayesLinearLRT(BayesianModule):
         w_std = torch.log(1 + torch.exp(self.w_rho))
         b_std = torch.log(1 + torch.exp(self.bias_rho))
 
-        act_mu = F.linear(x, self.mu)
+        act_mu = F.linear(x, self.w_mu)
         act_std = torch.sqrt(F.linear(x.pow(2), w_std.pow(2)))
 
         w_eps = self.epsilon_normal.sample(act_mu.size())
