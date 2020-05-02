@@ -99,7 +99,7 @@ class BayesLinearLRT(BayesianModule):
         w_kl = self.kld(
             mu_prior=0.0,
             std_prior=self.std_prior,
-            mu_posterior=self.mu,
+            mu_posterior=self.w_mu,
             std_posterior=w_std
         )
 
