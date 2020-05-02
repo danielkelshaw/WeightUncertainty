@@ -42,11 +42,17 @@ class BayesLinear(BayesianModule):
 
         super().__init__()
 
-        mu = torch.empty(out_features, in_features).uniform_(-0.2, 0.2)
-        rho = torch.empty(out_features, in_features).uniform_(-5.0, -4.0)
+        w_mu = torch.empty(out_features, in_features).uniform_(-0.2, 0.2)
+        w_rho = torch.empty(out_features, in_features).uniform_(-5.0, -4.0)
 
-        self.prior = ScaleMixture(prior_pi, prior_sigma1, prior_sigma2)
-        self.posterior = GaussianVariational(mu, rho)
+        bias_mu = torch.empty(out_features).uniform_(-0.2, 0.2)
+        bias_rho = torch.empty(out_features).uniform_(-5.0, -4.0)
+
+        self.w_posterior = GaussianVariational(w_mu, w_rho)
+        self.bias_posterior = GaussianVariational(bias_mu, bias_rho)
+
+        self.w_prior = ScaleMixture(prior_pi, prior_sigma1, prior_sigma2)
+        self.bias_prior = ScaleMixture(prior_pi, prior_sigma1, prior_sigma2)
 
         self.kl_divergence = 0.0
 
@@ -65,14 +71,20 @@ class BayesLinear(BayesianModule):
             Output from the Bayesian Linear layer.
         """
 
-        w = self.posterior.sample()
+        w = self.w_posterior.sample()
+        b = self.bias_posterior.sample()
 
-        log_prior = self.prior.log_prior(w)
-        log_posterior = self.posterior.log_posterior()
+        w_log_prior = self.w_prior.log_prior(w)
+        b_log_prior = self.bias_prior.log_prior(b)
 
-        self.kl_divergence = self.kld(log_prior, log_posterior)
+        w_log_posterior = self.w_posterior.log_posterior()
+        b_log_posterior = self.bias_posterior.log_posterior()
 
-        return F.linear(x, w)
+        total_log_prior = w_log_prior + b_log_prior
+        total_log_posterior = w_log_posterior + b_log_posterior
+        self.kl_divergence = self.kld(total_log_prior, total_log_posterior)
+
+        return F.linear(x, w, b)
 
     def kld(self, log_prior: Tensor, log_posterior: Tensor) -> Tensor:
 
