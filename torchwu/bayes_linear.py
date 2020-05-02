@@ -84,7 +84,7 @@ class BayesLinear(BayesianModule):
         total_log_posterior = w_log_posterior + b_log_posterior
         self.kl_divergence = self.kld(total_log_prior, total_log_posterior)
 
-        return F.linear(x, w)
+        return F.linear(x, w, b)
 
     def kld(self, log_prior: Tensor, log_posterior: Tensor) -> Tensor:
 
