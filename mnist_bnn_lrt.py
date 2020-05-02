@@ -1,11 +1,12 @@
 import csv
 
+import numpy as np
 import torch
 import torch.nn as nn
 from torchvision import datasets
 from torchvision import transforms
 
-from torchwu.bayes_linear import BayesLinear
+from torchwu.bayes_linear_lrt import BayesLinearLRT
 from torchwu.utils.minibatch_weighting import minibatch_weight
 from torchwu.utils.variational_approximator import variational_approximator
 
@@ -42,8 +43,8 @@ testloader = torch.data.utils.DataLoader(testset,
 class BayesianNetwork(nn.Module):
     def __init__(self, input_dim, output_dim):
         super().__init__()
-        self.blinear1 = BayesLinear(input_dim, 512)
-        self.blinear2 = BayesLinear(512, output_dim)
+        self.blinear1 = BayesLinearLRT(input_dim, 512)
+        self.blinear2 = BayesLinearLRT(512, output_dim)
 
     def forward(self, x):
         x_ = x.view(-1, 28 * 28)
@@ -56,11 +57,12 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 criterion = nn.CrossEntropyLoss()
 
 # prepare results file
-with open('results.csv', 'w+', newline="") as f_out:
+with open('results_lrt.csv', 'w+', newline="") as f_out:
     writer = csv.writer(f_out, delimiter=',')
     writer.writerow(['epoch', 'train_loss', 'test_loss', 'accuracy'])
 
-for epoch in range(500):
+min_test_loss = np.Inf
+for epoch in range(20):
 
     train_loss = 0.0
     test_loss = 0.0
@@ -121,6 +123,13 @@ for epoch in range(500):
     train_loss /= len(trainloader.dataset)
     test_loss /= len(testloader.dataset)
 
+    if test_loss < min_test_loss:
+        print('\nValidation Loss Decreased: {:.6f} -> {:.6f}\n'
+              ''.format(min_test_loss, test_loss))
+
+        min_test_loss = test_loss
+        torch.save(model.state_dict(), 'mnistBNN_LRT_checkpoint.pt')
+
     _results = [epoch, train_loss, test_loss, accuracy]
 
     print(f'Epoch: {epoch:03} | '
@@ -129,6 +138,6 @@ for epoch in range(500):
           f'Accuracy: {accuracy:.3f} %\n')
 
     # write results to file
-    with open('results.csv', 'a', newline="") as f_out:
+    with open('results_lrt.csv', 'a', newline="") as f_out:
         writer = csv.writer(f_out, delimiter=',')
         writer.writerow(_results)
