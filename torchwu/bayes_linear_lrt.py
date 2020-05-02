@@ -94,8 +94,6 @@ class BayesLinearLRT(BayesianModule):
         w_out = act_mu + act_std * w_eps
         b_out = self.bias_mu + b_std * bias_eps
 
-        output = w_out + b_out.unsqueeze(0).expand(x.shape[0], -1)
-
         w_kl = self.kld(
             mu_prior=0.0,
             std_prior=self.std_prior,
@@ -112,7 +110,7 @@ class BayesLinearLRT(BayesianModule):
 
         self.kl_divergence = w_kl + bias_kl
 
-        return output
+        return w_out + b_out
 
     def kld(self,
             mu_prior: float,
