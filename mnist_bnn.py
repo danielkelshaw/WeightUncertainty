@@ -53,14 +53,14 @@ class BayesianNetwork(nn.Module):
 
         x = F.relu(self.bl1(x))
         x = F.relu(self.bl2(x))
-        x = F.softmax(self.bl3(x))
+        x = self.bl3(x)
 
         return x
 
 
 model = BayesianNetwork(28 * 28, 10).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-criterion = nn.CrossEntropyLoss()
+criterion = nn.CrossEntropyLoss(reduction='sum')
 
 # prepare results file
 with open('results.csv', 'w+', newline="") as f_out:
@@ -121,7 +121,9 @@ for epoch in range(500):
             )
 
             test_loss += loss.item() * data.size(0)
-            _, predicted = torch.max(outputs.data, 1)
+
+            probabilities = F.softmax(outputs)
+            _, predicted = torch.max(probabilities.data, 1)
 
             total += labels.size(0)
             correct += torch.eq(predicted, labels).sum().item()
