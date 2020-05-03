@@ -59,7 +59,7 @@ class BayesianNetwork(nn.Module):
 
 
 model = BayesianNetwork(28 * 28, 10).to(device)
-optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 criterion = nn.CrossEntropyLoss()
 
 # prepare results file
@@ -73,11 +73,6 @@ for epoch in range(500):
     train_loss = 0.0
     test_loss = 0.0
 
-    if epoch == 0:
-        elbo_samples = 15
-    else:
-        elbo_samples = 3
-
     model.train()
     for batch_idx, (data, labels) in enumerate(trainloader):
         data, labels = data.to(device), labels.to(device)
@@ -90,7 +85,7 @@ for epoch in range(500):
             inputs=data,
             targets=labels,
             criterion=criterion,
-            n_samples=elbo_samples,
+            n_samples=3,
             w_complexity=pi_weight
         )
 
@@ -121,7 +116,7 @@ for epoch in range(500):
                 inputs=data,
                 targets=labels,
                 criterion=criterion,
-                n_samples=elbo_samples,
+                n_samples=3,
                 w_complexity=pi_weight
             )
 
