@@ -80,4 +80,4 @@ class GaussianVariational(nn.Module):
         log_exp = ((self.w - self.mu) ** 2) / (2 * self.sigma ** 2)
         log_posterior = -log_const - torch.log(self.sigma) - log_exp
 
-        return log_posterior.mean()
+        return log_posterior.sum()
