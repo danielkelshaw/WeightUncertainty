@@ -53,6 +53,8 @@ An example of a `Bayes-by-Backprop` network has been implemented in
 python3 mnist_bnn.py
 ```
 
+<img src="misc/bnn_mnist.png"/>
+
 ## **References**:
 
 ```
