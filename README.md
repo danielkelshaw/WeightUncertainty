@@ -1,10 +1,10 @@
 # **WeightUncertainty**
 [![Build Status](https://travis-ci.org/danielkelshaw/WeightUncertainty.svg?branch=master)](https://travis-ci.org/danielkelshaw/WeightUncertainty)
 
-PyTorch implemenation of [**Weight Uncertainty in Neural Networks**](https://arxiv.org/pdf/1907.00865.pdf).
+PyTorch implemenation of [**Weight Uncertainty in Neural Networks**](https://arxiv.org/pdf/1505.05424.pdf).
 
 This repository provides an implementation of the `Bayes-by-Backprop` 
-framework as described in the [Weight Uncertainty in Neural Networks](https://arxiv.org/pdf/1907.00865.pdf)
+framework as described in the [Weight Uncertainty in Neural Networks](https://arxiv.org/pdf/1505.05424.pdf)
 paper. The code provides a simple PyTorch interface and has been
 designed to be extensible, allowing for implementation of additional 
 functionality such as alternate priors or variational posteriors. In 
@@ -15,7 +15,7 @@ been implemented to provide the opporunity for faster, stable training.
 - [x] MIT License
 
 ## **Overview:**
-The [Weight Uncertainty in Neural Networks](https://arxiv.org/pdf/1907.00865.pdf)
+The [Weight Uncertainty in Neural Networks](https://arxiv.org/pdf/1505.05424.pdf)
 *(WUINN)* paper provides a framework known as `Bayes-by-Backprop` which 
 allows for learning a probability distribution on the weights of a 
 Neural Network. The network weights are regularised by minimising the 
@@ -68,4 +68,4 @@ python3 mnist_bnn.py
 }
 ```
 
-###### PyTorch implementation of [Weight Uncertainty in Neural Networks](https://arxiv.org/pdf/1907.00865.pdf)<br>Made by Daniel Kelshaw
+###### PyTorch implementation of [Weight Uncertainty in Neural Networks](https://arxiv.org/pdf/1505.05424.pdf)<br>Made by Daniel Kelshaw
